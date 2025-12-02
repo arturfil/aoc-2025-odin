@@ -11,50 +11,34 @@ problem1 :: proc(filepath: string) {
 	current: int = 50
 	sum: int = 0
 
-	data, ok := os.read_entire_file(filepath, context.allocator)
-	if !ok {
-		fmt.println("Couldn't read the file")
-		return
-	}
+    data, ok := os.read_entire_file(filepath, context.allocator)
+    if !ok {
+        fmt.println("Couldn't read the file")
+        // return "Error no file found", .FileNotFound
+        return 
+    }
 
-	defer delete(data, context.allocator)
+    defer delete(data, context.allocator)
+    it := string(data)
 
-	it := string(data)
 	for line in strings.split_lines_iterator(&it) {
-
 		direction := string(line[0:1])
 		unit, ok := strconv.parse_int(line[1:])
         unit %= 100
 
-		fmt.println("SUM -> ", sum)
-		fmt.println("Current", current)
-		fmt.printf("dir: %s, unit %d\n", direction, unit)
+        fmt.println("current", current)
 
 		if direction == "L" {
-            if current - unit == 0 {
-                sum += 1
-                current = 0
-            } else if current - unit < 0 {
-                current = 100 - abs(current - unit)
-            } else {
-                current = current - unit 
-            }
+            current = current - unit % 100
+            // if current < 0 do current += 100
 		} else {
-            if current + unit == 100 {
-                sum += 1
-                current = 0
-            } else if current + unit > 100 {
-                current = (current + unit) - 100
-            } else {
-                current += unit
-            }
+            current = current + unit % 100  
+        }
 
-		}
-
+        if current % 100 == 0 do sum += 1
 	}
 
-	fmt.println("SUm is: ", sum)
-
+	fmt.println("SUM ->", sum)
 }
 
 problem2 :: proc(filepath: string) {
@@ -66,46 +50,28 @@ problem2 :: proc(filepath: string) {
 		fmt.println("Couldn't read the file")
 		return
 	}
-
 	defer delete(data, context.allocator)
-
 	it := string(data)
+
 	for line in strings.split_lines_iterator(&it) {
+
+        fmt.println("current", current)
 
 		direction := string(line[0:1])
 		unit, ok := strconv.parse_int(line[1:])
-        rounds := unit / 100
+        rounds := (unit / 100)
         unit %= 100
 
-		fmt.println("SUM -> ", sum)
-		fmt.println("Current", current)
-		fmt.printf("dir: %s, unit %d\n", direction, unit)
-
 		if direction == "L" {
-            if current - unit == 0 {
-                sum += 1
-                current = 0
-            } else if current - unit < 0 {
-                sum += 1
-                current = 100 - abs(current - unit)
-            } else {
-                current = current - unit 
-            }
+            current = current - unit % 100
+            // if current < 0 do current += 100
 		} else {
-            if current + unit == 100 {
-                sum += 1
-                current = 0
-            } else if current + unit > 100 {
-                current = (current + unit) - 100
-                sum += 1
-            } else {
-                current += unit
-            }
-		}
-        sum += rounds
+            current = current + unit % 100  
+        }
+
+        if current % 100 == 0 do sum += 1 + rounds
+
+        fmt.println("sum->", sum)
 	}
-
-	fmt.println("SUm is: ", sum)
-
 
 }
