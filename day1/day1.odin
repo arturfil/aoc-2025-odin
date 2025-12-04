@@ -54,24 +54,22 @@ problem2 :: proc(filepath: string) {
 	it := string(data)
 
 	for line in strings.split_lines_iterator(&it) {
+		if len(line) == 0 do continue
 
-        fmt.println("current", current)
-
-		direction := string(line[0:1])
+		direction := line[0]
 		unit, ok := strconv.parse_int(line[1:])
-        rounds := (unit / 100)
-        unit %= 100
 
-		if direction == "L" {
-            current = current - unit % 100
-            // if current < 0 do current += 100
+		if direction == 'L' {
+			if unit > current do sum += 1
+			current -= unit
+			if current < 0 do current += 100
 		} else {
-            current = current + unit % 100  
-        }
-
-        if current % 100 == 0 do sum += 1 + rounds
-
-        fmt.println("sum->", sum)
+			if (current + unit) >= 100 do sum += 1
+			current += unit
+			if current >= 100 do current -= 100
+		}
 	}
+
+    fmt.println("final sum->", sum)
 
 }
