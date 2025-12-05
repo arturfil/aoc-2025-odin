@@ -11,31 +11,35 @@ problem1 :: proc(filepath: string) {
 	current: int = 50
 	sum: int = 0
 
-    data, ok := os.read_entire_file(filepath, context.allocator)
-    if !ok {
-        fmt.println("Couldn't read the file")
-        // return "Error no file found", .FileNotFound
-        return 
-    }
+	data, ok := os.read_entire_file(filepath, context.allocator)
+	if !ok {
+		fmt.println("Couldn't read the file")
+		return
+	}
 
-    defer delete(data, context.allocator)
-    it := string(data)
+	defer delete(data, context.allocator)
+	it := string(data)
 
 	for line in strings.split_lines_iterator(&it) {
-		direction := string(line[0:1])
+		direction := line[0]
 		unit, ok := strconv.parse_int(line[1:])
-        unit %= 100
+		unit %= 100
 
-        fmt.println("current", current)
+		fmt.println("current", current)
 
-		if direction == "L" {
-            current = current - unit % 100
-            // if current < 0 do current += 100
+		if direction == 'L' {
+			current = current - unit
+			if current < 0 {
+				current += 100
+			}
 		} else {
-            current = current + unit % 100  
-        }
+			current = current + unit
+			if current >= 100 {
+				current -= 100
+			}
+		}
 
-        if current % 100 == 0 do sum += 1
+		if current == 0 do sum += 1
 	}
 
 	fmt.println("SUM ->", sum)
@@ -57,32 +61,49 @@ problem2 :: proc(filepath: string) {
 		direction := line[0]
 		unit, ok := strconv.parse_int(line[1:])
 
-        current_init := current
+		initial := current
+		distance := unit
 
-        fmt.println("unit", unit)
-        sum += (unit / 100)
-        unit %= 100
+		sum += (distance / 100)
+		distance %= 100
 
-
-		if direction == 'L' {
-            current = current - unit
-            if current < 0 {
-                current += 100
-                sum += 1
-            }
-		} else {
-            current = current + unit
-            if current >= 100 {
-                current -= 100
-                sum += 1
-            }
-        }
-
-        if current == 0 do sum += 1
-
-
-        fmt.println("current", current)
+		zero_crossed := 0
+		switch direction {
+		case 'L':
+			{
+				if distance > initial {
+					// Wrapping backwards past 0
+					current = 100 - (distance - initial)
+					// Only count if we weren't already at 0
+					if initial != 0 {
+						zero_crossed = 1
+					}
+				} else {
+					current = initial - distance
+					if current == 0 {
+						zero_crossed = 1
+					}
+				}
+			}
+		case 'R':
+			{
+				if distance + initial >= 100 {
+					// Wrapping forward past 99 to 0 or beyond
+					current = (distance + initial) - 100
+					// Only count if we don't start at 0
+					if initial != 0 {
+						zero_crossed = 1
+					}
+				} else {
+					current = distance + initial
+					if current == 0 {
+						zero_crossed = 1
+					}
+				}
+			}
+		}
+		sum += zero_crossed
 	}
 
-    fmt.println("\nfinal sum ->", sum)
+	fmt.println("final sum ->", sum)
 }
